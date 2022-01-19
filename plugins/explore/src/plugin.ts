@@ -16,8 +16,7 @@
 
 import { exploreToolsConfigRef } from '@backstage/plugin-explore-react';
 import { catalogEntityRouteRef, exploreRouteRef } from './routes';
-import { exampleTools } from './util/examples';
-import { createApiFactory, createPlugin } from '@backstage/core-plugin-api';
+import { configApiRef, createApiFactory, createPlugin } from '@backstage/core-plugin-api';
 
 export const explorePlugin = createPlugin({
   id: 'explore',
@@ -26,10 +25,22 @@ export const explorePlugin = createPlugin({
     // the API locally in your app.
     createApiFactory({
       api: exploreToolsConfigRef,
-      deps: {},
-      factory: () => ({
+      deps: {
+        configApi: configApiRef,
+      },
+      factory: ({ configApi }) => ({
         async getTools() {
-          return exampleTools;
+          const toolsConfig = configApi.getOptionalConfigArray('explore.tools')
+            ?.map(c => {
+              return {
+                title: c.getString('title'),
+                description: c.getString('description'),
+                url: c.getString('url'),
+                image: c.getString('image'),
+                tags: c.getOptionalStringArray('tags') || [],
+              };
+            }) ?? [];
+          return toolsConfig;
         },
       }),
     }),
