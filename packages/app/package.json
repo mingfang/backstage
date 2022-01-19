@@ -94,7 +94,8 @@
     "test:e2e:ci": "start-server-and-test start http://localhost:3000 cy:run",
     "lint": "backstage-cli lint",
     "cy:dev": "cypress open",
-    "cy:run": "cypress run"
+    "cy:run": "cypress run",
+    "watch": "env && export > .env && nodemon --on-change-only --watch src --watch ../../plugins/explore/src --ext 'ts,json' --exec '. ./.env && yarn build'"
   },
   "browserslist": {
     "production": [
