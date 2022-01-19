@@ -2,7 +2,7 @@
 docs
 cypress
 microsite
-node_modules
-packages
+**/node_modules
+**/dist
 !packages/backend/dist
-plugins
+.idea
