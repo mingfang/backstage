@@ -34,6 +34,7 @@ export function registerCommands(program: CommanderStatic) {
       '--lax',
       '[DEPRECATED] - Do not require environment variables to be set',
     )
+    .option('--watch', 'Watch files and recompile whenever they change(webpack --watch)')
     .option(...configOption)
     .action(lazy(() => import('./app/build').then(m => m.default)));
 

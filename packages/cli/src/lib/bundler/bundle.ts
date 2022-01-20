@@ -63,31 +63,34 @@ export async function buildBundle(options: BuildOptions) {
       { spaces: 2 },
     );
   }
+  if (options.isWatch) {
+    await watch(compiler)
+  } else {
+    const { stats } = await build(compiler, isCi).catch(error => {
+      console.log(chalk.red('Failed to compile.\n'));
+      throw new Error(`Failed to compile.\n${error.message || error}`);
+    });
 
-  const { stats } = await build(compiler, isCi).catch(error => {
-    console.log(chalk.red('Failed to compile.\n'));
-    throw new Error(`Failed to compile.\n${error.message || error}`);
-  });
+    if (!stats) {
+      throw new Error('No stats returned');
+    }
 
-  if (!stats) {
-    throw new Error('No stats returned');
-  }
+    if (statsJsonEnabled) {
+      // No @types/bfj
+      await require('bfj').write(
+        resolvePath(paths.targetDist, 'bundle-stats.json'),
+        stats.toJson(),
+      );
+    }
 
-  if (statsJsonEnabled) {
-    // No @types/bfj
-    await require('bfj').write(
-      resolvePath(paths.targetDist, 'bundle-stats.json'),
-      stats.toJson(),
+    printFileSizesAfterBuild(
+      stats,
+      previousFileSizes,
+      paths.targetDist,
+      WARN_AFTER_BUNDLE_GZIP_SIZE,
+      WARN_AFTER_CHUNK_GZIP_SIZE,
     );
   }
-
-  printFileSizesAfterBuild(
-    stats,
-    previousFileSizes,
-    paths.targetDist,
-    WARN_AFTER_BUNDLE_GZIP_SIZE,
-    WARN_AFTER_CHUNK_GZIP_SIZE,
-  );
 }
 
 async function build(compiler: webpack.Compiler, isCi: boolean) {
@@ -150,3 +153,38 @@ async function build(compiler: webpack.Compiler, isCi: boolean) {
 
   return { stats };
 }
+
+async function watch(compiler: webpack.Compiler) {
+  const watchOptions = {
+    ignored: ['**/node_modules', '**/dist'],
+    aggregateTimeout: 300,
+    poll: 1000,
+  };
+  console.log('watching', watchOptions)
+  const stats = await new Promise<webpack.Stats | undefined>(
+    () => {
+      compiler.watch(watchOptions, (err, buildStats) => {
+        if (err) {
+          if (err.message) {
+            const { errors } = formatWebpackMessages({
+              errors: [err.message],
+              warnings: new Array<string>(),
+              _showErrors: true,
+              _showWarnings: true,
+            });
+
+            throw new Error(errors[0]);
+          }
+        } else {
+          console.log(buildStats?.toJson({
+            all: false,
+            warnings: true,
+            errors: true,
+          }));
+        }
+      });
+    }
+  );
+  return stats;
+}
+

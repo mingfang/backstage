@@ -41,5 +41,6 @@ export default async (cmd: Command) => {
       fromPackage: name,
       mockEnv: cmd.lax,
     })),
+    isWatch: cmd.watch,
   });
 };

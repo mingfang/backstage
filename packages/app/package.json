@@ -95,7 +95,7 @@
     "lint": "backstage-cli lint",
     "cy:dev": "cypress open",
     "cy:run": "cypress run",
-    "watch": "env && export > .env && nodemon --on-change-only --watch src --watch ../../plugins/explore/src --ext 'ts,json' --exec '. ./.env && yarn build'"
+    "watch": "backstage-cli app:build --watch"
   },
   "browserslist": {
     "production": [

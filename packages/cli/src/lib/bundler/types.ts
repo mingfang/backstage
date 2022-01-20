@@ -40,6 +40,7 @@ export type BuildOptions = BundlingPathsOptions & {
   schema?: ConfigSchema;
   frontendConfig: Config;
   frontendAppConfigs: AppConfig[];
+  isWatch: boolean;
 };
 
 export type BackendBundlingOptions = {
